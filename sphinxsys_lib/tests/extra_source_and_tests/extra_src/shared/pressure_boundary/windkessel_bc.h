@@ -18,9 +18,9 @@ class TargetOutletPressureWindkessel : public BaseLocalDynamics<BodyPartByCell>
           Q_n_(0.0), Q_0_(0.0), p_n_(80*133.32), p_0_(80*133.32),
           flow_rate_(*(this->particles_->registerSingularVariable<Real>("FlowRate" + std::to_string(part_id_ - 1))->Data())),
           current_flow_rate_(0.0), previous_flow_rate_(0.0),
-          physical_time_(sph_system_->getSystemVariableDataByName<Real>("PhysicalTime")),
           M_n_(0.0), current_mass_flow_rate_(0.0), previous_mass_flow_rate_(0.0),
-          acc_mass_flow_rate_(*(this->particles_->registerSingularVariable<Real>("AccMassFlowRate" + std::to_string(part_id_ - 1))->Data()))
+          acc_mass_flow_rate_(*(this->particles_->registerSingularVariable<Real>("AccMassFlowRate" + std::to_string(part_id_ - 1))->Data())),
+          physical_time_(sph_system_->getSystemVariableDataByName<Real>("PhysicalTime"))
     {};
     virtual ~TargetOutletPressureWindkessel(){};
 
