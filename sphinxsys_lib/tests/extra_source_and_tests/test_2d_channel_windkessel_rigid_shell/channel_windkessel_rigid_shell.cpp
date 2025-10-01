@@ -149,6 +149,7 @@ int main(int ac, char *av[])
     //----------------------------------------------------------------------
     SPHSystem sph_system(system_domain_bounds, resolution_ref);
     sph_system.handleCommandlineOptions(ac, av);
+    sph_system.setGenerateRegressionData(true);
     //----------------------------------------------------------------------
     //	Creating bodies with corresponding materials and particles.
     //----------------------------------------------------------------------
@@ -227,6 +228,7 @@ int main(int ac, char *av[])
     body_states_recording.addToWrite<Vecd>(shell_boundary, "NormalDirection");
     body_states_recording.addToWrite<Real>(shell_boundary, "Average1stPrincipleCurvature");
     body_states_recording.addToWrite<Real>(shell_boundary, "Average2ndPrincipleCurvature");
+    RegressionTestDynamicTimeWarping<ObservedQuantityRecording<Vecd>> write_radial_velocity("Velocity", fluid_observer_contact_radial);
     //----------------------------------------------------------------------
     //	Prepare the simulation with cell linked list, configuration
     //	and case specified initial condition if necessary.
@@ -246,6 +248,7 @@ int main(int ac, char *av[])
     Real &physical_time = *sph_system.getSystemVariableDataByName<Real>("PhysicalTime");
     size_t number_of_iterations = 0;
     int screen_output_interval = 100;
+    int observation_sample_interval = screen_output_interval * 2;
     Real end_time = 5.0;               /**< End time. */
     Real Output_Time = 0.01; /**< Time stamps for output of body states. */
     Real dt = 0.0;                     /**< Default acoustic time step sizes. */
@@ -266,7 +269,7 @@ int main(int ac, char *av[])
     //----------------------------------------------------------------------
     body_states_recording.writeToFile(0);
     right_pressure_condition.getTargetPressure()->setWindkesselParams(1.52E6, 1.96E-7, 6.85E6, accumulated_time);
-    
+    write_radial_velocity.writeToFile(number_of_iterations);
     //----------------------------------------------------------------------
     //	Main loop starts here.
     //----------------------------------------------------------------------
@@ -319,6 +322,12 @@ int main(int ac, char *av[])
                 std::cout << std::fixed << std::setprecision(9) << "N=" << number_of_iterations << "	Time = "
                           << physical_time
                           << "	Dt = " << Dt << "	dt = " << dt << "\n";
+
+                if (number_of_iterations % observation_sample_interval == 0 && number_of_iterations != sph_system.RestartStep())
+                {
+                    write_radial_velocity.writeToFile(number_of_iterations);
+                }
+
             }
             number_of_iterations++;
 
@@ -351,7 +360,7 @@ int main(int ac, char *av[])
         body_states_recording.writeToFile();
         
         /** Update observer and write output of observer. */
-
+        fluid_observer_contact_radial.updateConfiguration();
 
         TickCount t3 = TickCount::now();
         interval += t3 - t2;
@@ -371,5 +380,15 @@ int main(int ac, char *av[])
     std::cout << std::fixed << std::setprecision(9)
               << "interval_updating_configuration = "
               << interval_updating_configuration.seconds() << "\n";
+
+    if (sph_system.GenerateRegressionData())
+    {
+        write_radial_velocity.generateDataBase(1.0e-3);
+    }
+    else
+    {
+        write_radial_velocity.testResult();
+    }
+
     return 0;
 }
