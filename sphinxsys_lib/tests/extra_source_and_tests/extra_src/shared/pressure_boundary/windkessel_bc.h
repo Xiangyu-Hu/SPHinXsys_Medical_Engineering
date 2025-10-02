@@ -158,10 +158,10 @@ class BidirectionalBufferWindkessel
               buffer_indicator_(particles_->getVariableDataByName<int>("BufferIndicator")),
               upper_bound_fringe_(0.5 * sph_body_->getSPHBodyResolutionRef()),
               physical_time_(sph_system_->getSystemVariableDataByName<Real>("PhysicalTime")),
-              target_pressure_(target_pressure),
               flow_rate_(*(this->particles_->template getSingularVariableByName<Real>("FlowRate" + std::to_string(part_id_ - 1))->Data())),
-              acc_mass_flow_rate_(*(this->particles_->template getSingularVariableByName<Real>("AccMassFlowRate" + std::to_string(part_id_ - 1))->Data()))
-        {
+              acc_mass_flow_rate_(*(this->particles_->template getSingularVariableByName<Real>("AccMassFlowRate" + std::to_string(part_id_ - 1))->Data())),
+              target_pressure_(target_pressure)
+              {
             particle_buffer_.checkParticlesReserved();
         };
         virtual ~Injection() {};

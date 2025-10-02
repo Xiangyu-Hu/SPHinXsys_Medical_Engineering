@@ -40,6 +40,8 @@ Real c_f = 10.0 * U_max; /**< Reference sound speed. */
 //----------------------------------------------------------------------
 //	Fluid body definition.
 //----------------------------------------------------------------------
+namespace SPH
+{
 class WaterBlock : public MultiPolygonShape
 {
   public:
@@ -138,6 +140,7 @@ StdVec<Vecd> createRadialObservationPoints(
 
     return observation_points;
 };
+} // namespace SPH
 
 //----------------------------------------------------------------------
 //	Main code.
@@ -149,7 +152,7 @@ int main(int ac, char *av[])
     //----------------------------------------------------------------------
     SPHSystem sph_system(system_domain_bounds, resolution_ref);
     sph_system.handleCommandlineOptions(ac, av);
-    sph_system.setGenerateRegressionData(true);
+    sph_system.setGenerateRegressionData(false);
     //----------------------------------------------------------------------
     //	Creating bodies with corresponding materials and particles.
     //----------------------------------------------------------------------
