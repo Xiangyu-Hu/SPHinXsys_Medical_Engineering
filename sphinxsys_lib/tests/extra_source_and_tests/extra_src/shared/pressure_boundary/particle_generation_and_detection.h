@@ -113,4 +113,4 @@ class SurfaceRelaxationStep : public BaseDynamics<void>
 } // namespace relax_dynamics
 
 } // namespace SPH
-#endif PARTICLE_GENERATION_AND_DETECTION_H
+#endif  // PARTICLE_GENERATION_AND_DETECTION_H

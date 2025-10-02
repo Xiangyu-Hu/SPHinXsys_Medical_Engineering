@@ -34,6 +34,8 @@ Real thickness = 0.6 * scaling;
 //----------------------------------------------------------------------
 //	define the imported model.
 //----------------------------------------------------------------------
+namespace SPH
+{
 class ShellShape : public ComplexShape
 {
   public:
@@ -176,8 +178,6 @@ class ParticleGenerator<SurfaceParticles, FromVTPFile> : public ParticleGenerato
 
         vertex_positions_.reserve(50000);
         faces_.reserve(50000);
-
-        int read_face_num = 0;
 
         while (std::getline(file, line))
         {
@@ -442,6 +442,7 @@ class BoundaryGeometry : public BodyPartByParticle
 
     };
 };
+} // namespace SPH
 
 //-----------------------------------------------------------------------------------------------------------
 //	Main program starts here.
@@ -687,7 +688,6 @@ int main(int ac, char *av[])
     Real &physical_time = *sph_system.getSystemVariableDataByName<Real>("PhysicalTime");
     size_t number_of_iterations = sph_system.RestartStep();
     int screen_output_interval = 100;
-    int observation_sample_interval = screen_output_interval * 2;
     Real end_time = 2.5;     /**< End time. */
     Real Output_Time = 0.01; /**< Time stamps for output of body states. */
     Real dt = 0.0;           /**< Default acoustic time step sizes. */
