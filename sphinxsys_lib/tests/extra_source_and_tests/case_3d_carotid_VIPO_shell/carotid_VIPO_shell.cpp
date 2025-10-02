@@ -20,9 +20,6 @@ using namespace SPH;
 //----------------------------------------------------------------------
 std::string full_path_to_file = "./input/bif_artery.STL";
 std::string full_vtp_file_path = "./input/carotid_fluent_parsed_vtp.vtp";
-//----------------------------------------------------------------------
-//	Basic geometry parameters and numerical setup.
-//----------------------------------------------------------------------
 Vec3d translation(0.0, 0.0, 0.0);
 Real scaling = pow(10, -3);
 Vec3d domain_lower_bound(-7.0 * scaling, -5.0 * scaling, -34.0 * scaling);
@@ -457,7 +454,7 @@ int main(int ac, char *av[])
     sph_system.setReloadParticles(true);        // Tag for computation with save particles distribution
     sph_system.handleCommandlineOptions(ac, av);
     //----------------------------------------------------------------------
-    //	Creating body, materials and particles.cd
+    //	Creating body, materials and particles.
     //----------------------------------------------------------------------
     SolidBody shell_body(sph_system, makeShared<ShellShape>("ShellBody"));
     shell_body.defineAdaptation<SPHAdaptation>(1.15, dp_0 / shell_resolution);
