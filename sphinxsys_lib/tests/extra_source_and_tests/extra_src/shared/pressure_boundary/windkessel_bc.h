@@ -62,7 +62,7 @@ class TargetOutletPressureWindkessel : public BaseLocalDynamics<BodyPartByCell>
     Real p_n_, p_0_;
     Real &flow_rate_, current_flow_rate_, previous_flow_rate_;
     Real M_n_;
-    Real &acc_mass_flow_rate_, current_mass_flow_rate_, previous_mass_flow_rate_;
+    Real current_mass_flow_rate_, previous_mass_flow_rate_, &acc_mass_flow_rate_;
     Real *physical_time_;
 
     void getFlowRate()
