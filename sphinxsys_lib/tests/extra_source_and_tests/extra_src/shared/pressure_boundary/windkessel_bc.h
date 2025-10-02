@@ -329,6 +329,91 @@ class AreaAverageFlowRate : public ReduceSumType
 
 using SectionTransientFlowRate = AreaAverageFlowRate<TotalVelocityNormVal>;
 
+class ResistanceBCPressure : public BaseLocalDynamics<BodyPartByCell>
+{
+  public:
+    explicit ResistanceBCPressure(AlignedBoxByCell &aligned_box_part)
+        : BaseLocalDynamics<BodyPartByCell>(aligned_box_part),
+          part_id_(aligned_box_part.getPartID()),
+          R_(0.0), delta_t_(0.0),
+          p_n_(0), p_0_(0), Q_n_(0.0), 
+          flow_rate_(*(this->particles_->registerSingularVariable<Real>("FlowRate" + std::to_string(part_id_ - 1))->Data())),
+          current_flow_rate_(0.0), previous_flow_rate_(0.0),
+          M_n_(0.0), current_mass_flow_rate_(0.0), previous_mass_flow_rate_(0.0),
+          acc_mass_flow_rate_(*(this->particles_->registerSingularVariable<Real>("AccMassFlowRate" + std::to_string(part_id_ - 1))->Data())),
+          physical_time_(sph_system_->getSystemVariableDataByName<Real>("PhysicalTime")) {};
+    virtual ~ResistanceBCPressure(){};
+
+    void setWindkesselParams(Real R, Real dt)
+    {
+        R_ = R;
+        delta_t_ = dt;
+    }
+
+    void updateNextPressure()
+    {
+        getFlowRate();
+
+        Q_n_ = current_flow_rate_ / delta_t_;
+        p_n_ = R_ * Q_n_;
+
+        M_n_ = current_mass_flow_rate_ / delta_t_;
+
+        std::cout << "Q_n_ = " << Q_n_ << std::endl;
+        std::cout << "p_n_ = " << p_n_ << std::endl;
+
+        writeOutletPressureData();
+        writeOutletFlowRateData();
+    }
+
+    Real operator()(Real p, Real current_time)
+    {
+        return p_n_;
+    }
+
+  protected:
+    int part_id_;
+    Real R_, delta_t_;
+    Real p_n_, p_0_,  Q_n_;
+    Real &flow_rate_, current_flow_rate_, previous_flow_rate_;
+    Real M_n_;
+    Real current_mass_flow_rate_, previous_mass_flow_rate_, &acc_mass_flow_rate_;
+    Real *physical_time_;
+
+    void getFlowRate()
+    {
+        current_flow_rate_ = flow_rate_ - previous_flow_rate_;
+        previous_flow_rate_ = flow_rate_;
+
+        current_mass_flow_rate_ = acc_mass_flow_rate_ - previous_mass_flow_rate_;
+        previous_mass_flow_rate_ = acc_mass_flow_rate_;
+    }
+
+    void writeOutletPressureData()
+    {
+        std::string output_folder = "./output";
+        std::string filefullpath = output_folder + "/" + std::to_string(part_id_ - 1) + "_outlet_pressure.dat";
+        std::ofstream out_file(filefullpath.c_str(), std::ios::app);
+        out_file << *physical_time_ << "   " << p_n_ <<  "\n";
+        out_file.close();
+    }
+
+    void writeOutletFlowRateData()
+    {
+        std::string output_folder = "./output";
+        std::string filefullpath = output_folder + "/" + std::to_string(part_id_ - 1) + "_flow_rate.dat";
+        std::ofstream out_file(filefullpath.c_str(), std::ios::app);
+        out_file << *physical_time_ << "   " << Q_n_ <<  "\n";
+        out_file.close();
+
+        std::string filefullpath_mass = output_folder + "/" + std::to_string(part_id_ - 1) + "_mass_flow_rate.dat";
+        std::ofstream out_file_mass(filefullpath_mass.c_str(), std::ios::app);
+        out_file_mass << *physical_time_ << "   " << M_n_ <<  "\n";
+        out_file_mass.close();
+    }
+};
+
+using ResistanceBoundaryCondition = PressureCondition<ResistanceBCPressure>;
 } // namespace fluid_dynamics
 } // namespace SPH
 #endif // WINDKESSEL_BC_H
